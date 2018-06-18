@@ -1,0 +1,48 @@
+plugins {
+    id 'java'
+    id 'io.franzbecker.gradle-lombok' version '1.14'
+
+    id 'edu.sc.seis.launch4j' version '2.4.4'
+}
+
+group 'com.github.idosu'
+version '1.0.0'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+lombok {
+    version = "1.18.0"
+}
+
+dependencies {
+    compile 'net.java.dev.jna:jna:4.5.1'
+    compile 'net.java.dev.jna:jna-platform:4.5.1'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.github.idosu.devutil.ctrld.CtrlD'
+    }
+
+    from {
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+}
+
+launch4j {
+    //mainClassName = 'com.github.idosu.devutil.CtrlD'
+    jar = "$libraryDir/$tasks.jar.archiveName"
+    jreMinVersion = '1.8.0_0'
+    jreMaxVersion = '1.8.0_999'
+}
+
+build {
+    dependsOn createExe
+}
