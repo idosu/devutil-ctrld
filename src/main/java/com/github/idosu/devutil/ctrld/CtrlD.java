@@ -40,6 +40,13 @@ public class CtrlD {
                     if (isForegroundProcessCmd()) {
                         System.out.println("User is inside cmd, killing cmd...");
                         exitCmd();
+                    } else {
+                        System.out.println("User is not inside a cmd, resending Ctrl+D...");
+                        hotkey.unregister();
+                        // Ctrl is already pressed just need to add the d
+                        pressKey(robot, VK_D);
+                        hotkey.register();
+                        hotkey.clearMesseges();
                     }
                 }
             } finally {

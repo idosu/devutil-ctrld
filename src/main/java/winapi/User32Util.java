@@ -59,6 +59,68 @@ public interface User32Util extends Library {
         return lpMsg;
     }
 
+    interface RemoveMessage {
+        /** Messages are not removed from the queue after processing by PeekMessage. */
+        RemoveMessage PM_NOREMOVE = proc(0x0000);
+        /** Messages are removed from the queue after processing by PeekMessage. */
+        RemoveMessage PM_REMOVE = proc(0x0001);
+        /**
+         * Prevents the system from releasing any thread that is waiting for the caller to go idle (see WaitForInputIdle).
+         * Combine this value with either PM_NOREMOVE or PM_REMOVE.
+         */
+        RemoveMessage PM_NOYIELD = proc(0x0002);
+
+        int code();
+
+        static RemoveMessage proc(int code) {
+            return () -> code;
+        }
+
+        default RemoveMessage and(RemoveMessage other) {
+            return () -> code() & other.code();
+        }
+
+        default RemoveMessage or(RemoveMessage other) {
+            return () -> code() | other.code();
+        }
+
+        default RemoveMessage xor(RemoveMessage other) {
+            return () -> code() ^ other.code();
+        }
+
+        default RemoveMessage not() {
+            return () -> ~code();
+        }
+    }
+
+    static MSG peekMessage(RemoveMessage removeMessage) {
+        return peekMessage(null, removeMessage);
+    }
+
+    static MSG peekMessage(HWND hWnd, RemoveMessage removeMessage) {
+        return peekMessage(hWnd, 0, removeMessage);
+    }
+
+    static MSG peekMessage(int windowMessage, RemoveMessage removeMessage) {
+        return peekMessage(null, windowMessage, removeMessage);
+    }
+
+    static MSG peekMessage(HWND hWnd, int windowMessage, RemoveMessage removeMessage) {
+        return peekMessage(hWnd, windowMessage, windowMessage, removeMessage);
+    }
+
+    static MSG peekMessage(int minWindowMessage, int maxWindowMessage, RemoveMessage removeMessage) {
+        return peekMessage(null, minWindowMessage, maxWindowMessage, removeMessage);
+    }
+
+    static MSG peekMessage(HWND hWnd, int minWindowMessage, int maxWindowMessage, RemoveMessage removeMessage) {
+        MSG lpMsg = new MSG();
+        if (User32.INSTANCE.PeekMessage(lpMsg, hWnd, minWindowMessage, maxWindowMessage, removeMessage.code())) {
+            return lpMsg;
+        }
+        return null;
+    }
+
     // TODO: Tell JNA that they've missed a function
     boolean WaitMessage(
     );

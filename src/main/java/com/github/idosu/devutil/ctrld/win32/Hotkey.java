@@ -5,6 +5,7 @@ import com.sun.jna.platform.win32.WinUser.MSG;
 import winapi.User32Util;
 
 import static com.sun.jna.platform.win32.WinUser.WM_HOTKEY;
+import static winapi.User32Util.RemoveMessage.PM_REMOVE;
 
 public interface Hotkey {
     int getModifiers();
@@ -13,6 +14,7 @@ public interface Hotkey {
     void register() throws Win32Exception;
     void unregister() throws Win32Exception;
     MSG waitForMessage() throws Win32Exception;
+    void clearMesseges() throws Win32Exception;
 
     static Hotkey of(int id, int modifiers, int virtualKey) {
         return new  Hotkey() {
@@ -48,6 +50,12 @@ public interface Hotkey {
             public MSG waitForMessage() throws Win32Exception {
                 User32Util.waitMessage();
                 return User32Util.getMessage(WM_HOTKEY);
+            }
+
+            @Override
+            public void clearMesseges() throws Win32Exception {
+                // noinspection StatementWithEmptyBody
+                while (User32Util.peekMessage(WM_HOTKEY, PM_REMOVE) != null);
             }
         };
     }
