@@ -98,11 +98,11 @@ public interface Kernel32Util extends Library {
         /** Required to write to memory in a process using WriteProcessMemory. */
         ProcessAccess PROCESS_VM_WRITE = proc(0x0020);
 
+        int code();
+
         static ProcessAccess proc(int code) {
             return () -> code;
         }
-
-        int code();
 
         default ProcessAccess and(ProcessAccess other) {
             return () -> code() & other.code();

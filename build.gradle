@@ -6,7 +6,7 @@ plugins {
 }
 
 group 'com.github.idosu'
-version '1.0.0'
+version '1.0.1'
 
 sourceCompatibility = 1.8
 
@@ -37,10 +37,12 @@ jar {
 }
 
 launch4j {
-    //mainClassName = 'com.github.idosu.devutil.CtrlD'
     jar = "$libraryDir/$tasks.jar.archiveName"
     jreMinVersion = '1.8.0_0'
     jreMaxVersion = '1.8.0_999'
+
+    version = project.version
+    copyright = 'idosu'
 }
 
 build {

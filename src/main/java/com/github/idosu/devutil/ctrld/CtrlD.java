@@ -1,10 +1,8 @@
 package com.github.idosu.devutil.ctrld;
 
-import com.sun.jna.platform.win32.WinDef.HWND;
-import com.sun.jna.platform.win32.WinNT.HANDLE;
-import winapi.Kernel32Util;
-import winapi.Kernel32Util.Handle;
-import winapi.User32Util;
+import com.github.idosu.devutil.ctrld.win32.Hotkey;
+import com.github.idosu.devutil.ctrld.win32.Process;
+import com.github.idosu.devutil.ctrld.win32.Window;
 
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
@@ -13,7 +11,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
 import static com.sun.jna.platform.win32.WinUser.MOD_CONTROL;
-import static com.sun.jna.platform.win32.WinUser.WM_HOTKEY;
 import static java.awt.event.KeyEvent.VK_CONTROL;
 import static java.awt.event.KeyEvent.VK_D;
 import static java.awt.event.KeyEvent.VK_E;
@@ -31,15 +28,14 @@ public class CtrlD {
         try {
             robot = new Robot();
 
-            int id = 1337;
-            User32Util.registerHotKey(id, MOD_CONTROL, VK_D);
+            Hotkey hotkey = Hotkey.of(1337, MOD_CONTROL, VK_D);
 
+            hotkey.register();
             try {
                 // noinspection InfiniteLoopStatement
                 while (true) {
-                    User32Util.waitMessage();
+                    hotkey.waitForMessage();
                     System.out.println("User hit Ctrl+D");
-                    User32Util.getMessage(WM_HOTKEY);
 
                     if (isForegroundProcessCmd()) {
                         System.out.println("User is inside cmd, killing cmd...");
@@ -47,7 +43,7 @@ public class CtrlD {
                     }
                 }
             } finally {
-                User32Util.unregisterHotKey(id);
+                hotkey.unregister();
             }
         } catch (Throwable t) {
             showError(t);
@@ -55,11 +51,10 @@ public class CtrlD {
     }
 
     private static boolean isForegroundProcessCmd() {
-        HWND foregroundWindow = User32Util.getForegroundWindow();
-        int processId = User32Util.getWindowThreadProcessId(foregroundWindow).getProcessId();
+        Window foregroundWindow = Window.getForegroundWindow();
 
-        try (Handle<HANDLE> process = Kernel32Util.openProcess(PROCESS_QUERY_INFORMATION.or(PROCESS_VM_READ), false, processId)) {
-            String imageFileName = Kernel32Util.getProcessImageFileName(process);
+        try (Process process = foregroundWindow.openProcess(PROCESS_QUERY_INFORMATION.or(PROCESS_VM_READ), false)) {
+            String imageFileName = process.getImageFileName();
 
             // TODO: Do it in a configurable way
             return imageFileName.endsWith("\\Windows\\System32\\cmd.exe")

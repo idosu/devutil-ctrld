@@ -34,11 +34,19 @@ public interface User32Util extends Library {
     }
 
     static MSG getMessage() throws Win32Exception {
-        return getMessage(0);
+        return getMessage(null);
+    }
+
+    static MSG getMessage(HWND hWnd) throws Win32Exception {
+        return getMessage(hWnd, 0);
     }
 
     static MSG getMessage(int windowMessage) throws Win32Exception {
-        return getMessage(windowMessage, windowMessage);
+        return getMessage(null, windowMessage);
+    }
+
+    static MSG getMessage(HWND hWnd, int windowMessage) throws Win32Exception {
+        return getMessage(hWnd, windowMessage, windowMessage);
     }
 
     static MSG getMessage(int minWindowMessage, int maxWindowMessage) throws Win32Exception {
@@ -64,12 +72,12 @@ public interface User32Util extends Library {
     }
 
     @Getter @Builder
-    class WindowThreadProcessId {
+    class ThreadProcessId {
         private int threadId;
         private int processId;
     }
 
-    static WindowThreadProcessId getWindowThreadProcessId(HWND hWnd) {
+    static ThreadProcessId getWindowThreadProcessId(HWND hWnd) {
         IntByReference lpdwProcessId;
 
         int threadId = User32.INSTANCE.GetWindowThreadProcessId(
@@ -77,7 +85,7 @@ public interface User32Util extends Library {
             lpdwProcessId = new IntByReference()
         );
 
-        return WindowThreadProcessId.builder()
+        return ThreadProcessId.builder()
             .processId(lpdwProcessId.getValue())
             .threadId(threadId)
             .build();
